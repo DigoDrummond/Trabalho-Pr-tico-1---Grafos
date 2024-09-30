@@ -3,11 +3,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-class Grafo {
-    private Grafo proximo;
+class Adjacentes {
+    private Adjacentes proximo;
     private int vertice;
 
-    public Grafo(int vertice) {
+    public Adjacentes(int vertice) {
         this.proximo = null;
         this.vertice = vertice;
     }
@@ -20,24 +20,24 @@ class Grafo {
         this.vertice = vertice;
     }
 
-    public Grafo getProximo() {
+    public Adjacentes getProximo() {
         return this.proximo;
     }
 
-    public void setProximo(Grafo proximo) {
+    public void setProximo(Adjacentes proximo) {
         this.proximo = proximo;
     }
 
-    public static Grafo ordenarGrafo(Grafo cabeca) {
+    public static Adjacentes ordenarAdjacentes(Adjacentes cabeca) {
         if (cabeca == null || cabeca.proximo == null) {
             return cabeca;
         }
 
         //Selection Sort
-        Grafo atual = cabeca;
+        Adjacentes atual = cabeca;
         while (atual != null) {
-            Grafo menor = atual;
-            Grafo proximo = atual.proximo;
+            Adjacentes menor = atual;
+            Adjacentes proximo = atual.proximo;
 
             while (proximo != null) {
                 if (proximo.vertice < menor.vertice) {
@@ -90,12 +90,12 @@ class Busca {
     private List<Aresta> avanco;
     private List<Aresta> cruzamento;
 
-    public Busca(Grafo[] grafo, int vertice) {
+    public Busca(Adjacentes[] adjacentes, int vertice) {
         t = 0;
-        td = new int[grafo.length];
-        tt = new int[grafo.length];
-        pai = new int[grafo.length];
-        for (int i = 0; i < grafo.length; i++) {
+        td = new int[adjacentes.length];
+        tt = new int[adjacentes.length];
+        pai = new int[adjacentes.length];
+        for (int i = 0; i < adjacentes.length; i++) {
             td[i] = 0;
             tt[i] = 0;
             pai[i] = -1;
@@ -105,7 +105,7 @@ class Busca {
         avanco = new ArrayList<Aresta>();
         cruzamento = new ArrayList<Aresta>();
 
-        buscaEmProfundidadeIterativa(grafo);
+        buscaEmProfundidadeIterativa(adjacentes);
     }
 
     public int getT(){
@@ -143,15 +143,15 @@ class Busca {
         return cruzamento;
     }
 
-    public void buscaEmProfundidadeIterativa(Grafo[] grafo) {
-        for (int vInicial = 1; vInicial <= grafo.length; vInicial++) {
+    public void buscaEmProfundidadeIterativa(Adjacentes[] adjacentes) {
+        for (int vInicial = 1; vInicial <= adjacentes.length; vInicial++) {
             if (!visto(vInicial - 1)) {
-                visitaIterativa(grafo, vInicial);  // Chama a função de busca para cada nova raiz não visitada
+                visitaIterativa(adjacentes, vInicial);  // Chama a função de busca para cada nova raiz não visitada
             }
         }
     }
 
-    public void visitaIterativa(Grafo[] grafo, int vInicial) {
+    public void visitaIterativa(Adjacentes[] adjacentes, int vInicial) {
         Stack<Integer> stack = new Stack<>();
         stack.push(vInicial);
         
@@ -161,7 +161,7 @@ class Busca {
             int v = stack.peek();
             boolean allVisited = true;
 
-            for (Grafo g = grafo[v - 1]; g != null; g = g.getProximo()) {
+            for (Adjacentes g = adjacentes[v - 1]; g != null; g = g.getProximo()) {
                 int verticeAdj = g.getVertice();
                 if (!visto(verticeAdj - 1)) {
                     arvore.add(new Aresta(v, verticeAdj));
@@ -187,13 +187,13 @@ class Busca {
         }
     }
 
-    // public void visitaRecursiva(Grafo[] grafo, int v) {
+    // public void visitaRecursiva(Adjacentes[] adjacentes, int v) {
     //     td[v-1] = ++t;
-    //     for (Grafo g = grafo[v-1]; g != null; g = g.getProximo()) {
+    //     for (Adjacentes g = adjacentes[v-1]; g != null; g = g.getProximo()) {
     //         if (!visto(g.getVertice()-1)) {
     //             arvore.add(new Aresta(v, g.getVertice()));
     //             pai[g.getVertice()-1] = v;
-    //             visita(grafo, g.getVertice());
+    //             visita(adjacentes, g.getVertice());
     //         } else if (td[g.getVertice()-1] > td[v-1]) {
     //             avanco.add(new Aresta(v, g.getVertice()));
     //         } else if (tt[g.getVertice()-1] == 0) {
@@ -224,9 +224,9 @@ public class Main {
         nomeArq = System.console().readLine();
         System.out.print("Digite o número do vertice: ");
         int vertice = Integer.parseInt(System.console().readLine());
-        Grafo[] grafo = null;
-        grafo = constroiGrafo(grafo, nomeArq);
-        Busca busca = new Busca(grafo, vertice);
+        Adjacentes[] adjacentes = null;
+        adjacentes = constroiAdjacentes(adjacentes, nomeArq);
+        Busca busca = new Busca(adjacentes, vertice);
         // System.out.println("Tempo de descoberta: " + busca.getTdAt(vertice-1));
         // System.out.println("Tempo de término: " + busca.getTtAt(vertice-1));
         // System.out.println("Tempo total: " + busca.getT());
@@ -239,34 +239,34 @@ public class Main {
 
     }
 
-    public static Grafo[] constroiGrafo(Grafo[] grafo, String nomeArq) {
+    public static Adjacentes[] constroiAdjacentes(Adjacentes[] adjacentes, String nomeArq) {
         // Leitura do arquivo
         try {
             RandomAccessFile rf = new RandomAccessFile(nomeArq, "r");
             int[] primeiraLinha = processLine(rf);
 
-            grafo = new Grafo[primeiraLinha[0]];
+            adjacentes = new Adjacentes[primeiraLinha[0]];
             for (int i = 0; i < primeiraLinha[0]; i++) {
-                grafo[i] = new Grafo(i+1);
+                adjacentes[i] = new Adjacentes(i+1);
             }
 
             for (int i = 0; i < primeiraLinha[1]; i++) {
                 int[] valores = processLine(rf);
 
-                Grafo aux = grafo[valores[0]-1];
+                Adjacentes aux = adjacentes[valores[0]-1];
                 while (aux.getProximo() != null) {
                     aux = aux.getProximo();
                 }
-                aux.setProximo(new Grafo(valores[1]));
+                aux.setProximo(new Adjacentes(valores[1]));
             }
 
             for (int i = 0; i < primeiraLinha[0]; i++) {
-                grafo[i] = Grafo.ordenarGrafo(grafo[i]);
+                adjacentes[i] = Adjacentes.ordenarAdjacentes(adjacentes[i]);
             }            
 
             rf.close();
 
-            return grafo;
+            return adjacentes;
         } catch (Exception e) {
             System.out.println("Erro ao abrir o arquivo");
             return null;
