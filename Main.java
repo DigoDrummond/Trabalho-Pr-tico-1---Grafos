@@ -87,8 +87,6 @@ class Busca {
     
     private List<Aresta> arvore;
     private List<Aresta> retorno;
-    private List<Aresta> avanco;
-    private List<Aresta> cruzamento;
 
     public Busca(Adjacentes[] adjacentes, int vertice) {
         t = 0;
@@ -102,8 +100,6 @@ class Busca {
         }
         arvore = new ArrayList<Aresta>();
         retorno = new ArrayList<Aresta>();
-        avanco = new ArrayList<Aresta>();
-        cruzamento = new ArrayList<Aresta>();
 
         buscaEmProfundidadeIterativa(adjacentes);
     }
@@ -133,14 +129,6 @@ class Busca {
 
     public List<Aresta> getRetorno(){
         return retorno;
-    }
-
-    public List<Aresta> getAvanco(){
-        return avanco;
-    }
-
-    public List<Aresta> getCruzamento(){
-        return cruzamento;
     }
 
     public void buscaEmProfundidadeIterativa(Adjacentes[] adjacentes) {
@@ -173,10 +161,6 @@ class Busca {
                     break;
                 } else if (tt[verticeAdj - 1] == 0) {
                     retorno.add(new Aresta(v, verticeAdj));
-                } else if (td[v - 1] < td[verticeAdj - 1]) {
-                    avanco.add(new Aresta(v, verticeAdj));
-                } else {
-                    cruzamento.add(new Aresta(v, verticeAdj));
                 }
             }
             
@@ -232,8 +216,6 @@ public class Main {
         // System.out.println("Tempo total: " + busca.getT());
         System.out.println("Arestas de árvore: " + busca.getArvore());
         // System.out.println("Arestas de retorno: " + busca.getRetorno());
-        // System.out.println("Arestas de avanço: " + busca.getAvanco());
-        // System.out.println("Arestas de cruzamento: " + busca.getCruzamento());
         System.out.println("");
         System.out.println("Arestas de árvore do vértice " + vertice + ": " + busca.getArestasDeArvoreDoVertice(vertice));
 
@@ -243,14 +225,14 @@ public class Main {
         // Leitura do arquivo
         try {
             RandomAccessFile rf = new RandomAccessFile(nomeArq, "r");
-            int[] primeiraLinha = processLine(rf);
+            int nVertices = Integer.parseInt(rf.readLine());
 
-            adjacentes = new Adjacentes[primeiraLinha[0]];
-            for (int i = 0; i < primeiraLinha[0]; i++) {
+            adjacentes = new Adjacentes[nVertices];
+            for (int i = 0; i < nVertices; i++) {
                 adjacentes[i] = new Adjacentes(i+1);
             }
 
-            for (int i = 0; i < primeiraLinha[1]; i++) {
+            while(rf.getFilePointer() < rf.length()) {
                 int[] valores = processLine(rf);
 
                 Adjacentes aux = adjacentes[valores[0]-1];
@@ -258,9 +240,14 @@ public class Main {
                     aux = aux.getProximo();
                 }
                 aux.setProximo(new Adjacentes(valores[1]));
+                aux = adjacentes[valores[1]-1];
+                while (aux.getProximo() != null) {
+                    aux = aux.getProximo();
+                }
+                aux.setProximo(new Adjacentes(valores[0]));
             }
 
-            for (int i = 0; i < primeiraLinha[0]; i++) {
+            for (int i = 0; i < nVertices; i++) {
                 adjacentes[i] = Adjacentes.ordenarAdjacentes(adjacentes[i]);
             }            
 
