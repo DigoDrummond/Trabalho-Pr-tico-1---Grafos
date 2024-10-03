@@ -1,6 +1,10 @@
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 
 class Adjacentes {
@@ -79,154 +83,208 @@ class Aresta {
     }
 }
 
-class Busca {
-    private int t;
-    private int td[];
-    private int tt[];
-    private int pai[];
-    
-    private List<Aresta> arvore;
-    private List<Aresta> retorno;
-    private List<List<Integer>> ciclos;
+// class Busca {
+//     private int t;
+//     private int td[];
+//     private int tt[];
+//     private int pai[];
 
-    public Busca(Adjacentes[] adjacentes, int vertice) {
-        t = 0;
-        td = new int[adjacentes.length];
-        tt = new int[adjacentes.length];
-        pai = new int[adjacentes.length];
-        for (int i = 0; i < adjacentes.length; i++) {
-            td[i] = 0;
-            tt[i] = 0;
-            pai[i] = -1;
-        }
-        arvore = new ArrayList<Aresta>();
-        retorno = new ArrayList<Aresta>();
-        ciclos = new ArrayList<>();
+//     private List<Aresta> arvore;
+//     private List<Aresta> retorno;
 
-        buscaEmProfundidadeIterativa(adjacentes);
-    }
+//     private boolean hasCycle = false;
 
-    public int getT(){
-        return t;
-    }
+//     public Busca(Adjacentes[] adjacentes) {
+//         t = 0;
+//         td = new int[adjacentes.length];
+//         tt = new int[adjacentes.length];
+//         pai = new int[adjacentes.length];
+//         for (int i = 0; i < adjacentes.length; i++) {
+//             td[i] = 0;
+//             tt[i] = 0;
+//             pai[i] = -1;
+//         }
+//         arvore = new ArrayList<Aresta>();
+//         retorno = new ArrayList<Aresta>();
 
-    public int getTdAt(int v){
-        return td[v];
-    } 
+//         buscaEmProfundidadeIterativa(adjacentes);
+//     }
 
-    public int getTtAt(int v){
-        return tt[v];
-    } 
-    public boolean visto(int v){
-        return td[v] != 0;
-    }
+//     public int getT(){
+//         return t;
+//     }
 
-    public int getPai(int v){
-        return pai[v];
-    }
+//     public int getTdAt(int v){
+//         return td[v];
+//     } 
 
-    public List<Aresta> getArvore(){
-        return arvore;
-    }
+//     public int getTtAt(int v){
+//         return tt[v];
+//     } 
+//     public boolean visto(int v){
+//         return td[v] != 0;
+//     }
 
-    public List<Aresta> getRetorno(){
-        return retorno;
-    }
+//     public int getPai(int v){
+//         return pai[v];
+//     }
 
-    public void buscaEmProfundidadeIterativa(Adjacentes[] adjacentes) {
-        for (int vInicial = 1; vInicial <= adjacentes.length; vInicial++) {
-            if (!visto(vInicial - 1)) {
-                visitaIterativa(adjacentes, vInicial);  // Chama a função de busca para cada nova raiz não visitada
-            }
-        }
-    }
+//     public List<Aresta> getArvore(){
+//         return arvore;
+//     }
 
-    public void visitaIterativa(Adjacentes[] adjacentes, int vInicial) {
-        Stack<Integer> stack = new Stack<>();
-        stack.push(vInicial);
+//     public List<Aresta> getRetorno(){
+//         return retorno;
+//     }
+
+//     public boolean hasCycle() {
+//         return hasCycle;
+//     }
+
+//     public void buscaEmProfundidadeIterativa(Adjacentes[] adjacentes) {
+//         for (int vInicial = 1; vInicial <= adjacentes.length; vInicial++) {
+//             if (!visto(vInicial - 1)) {
+//                 visitaIterativa(adjacentes, vInicial);  // Chama a função de busca para cada nova raiz não visitada
+//             }
+//         }
+//     }
+
+//     public void visitaIterativa(Adjacentes[] adjacentes, int vInicial) {
+//         Stack<Integer> stack = new Stack<>();
+//         stack.push(vInicial);
         
-        td[vInicial - 1] = ++t;
+//         td[vInicial - 1] = ++t;
         
-        while (!stack.isEmpty()) {
-            int v = stack.peek();
-            boolean allVisited = true;
+//         while (!stack.isEmpty()) {
+//             int v = stack.peek();
+//             boolean allVisited = true;
 
-            for (Adjacentes g = adjacentes[v - 1]; g != null; g = g.getProximo()) {
-                int verticeAdj = g.getVertice();
-                if (!visto(verticeAdj - 1)) {
-                    arvore.add(new Aresta(v, verticeAdj));
-                    pai[verticeAdj - 1] = v;
+//             for (Adjacentes g = adjacentes[v - 1].getProximo(); g != null; g = g.getProximo()) {
+//                 int verticeAdj = g.getVertice();
+//                 if (!visto(verticeAdj - 1)) {
+//                     arvore.add(new Aresta(v, verticeAdj));
+//                     pai[verticeAdj - 1] = v;
                     
-                    td[verticeAdj - 1] = ++t;
-                    stack.push(verticeAdj);
-                    allVisited = false;
-                    break;
-                } else if (tt[verticeAdj - 1] == 0) {
-                    retorno.add(new Aresta(v, verticeAdj));
-                }
-            }
+//                     td[verticeAdj - 1] = ++t;
+//                     stack.push(verticeAdj);
+//                     allVisited = false;
+//                     break;
+//                 } else if (tt[verticeAdj - 1] == 0 && pai[v - 1] != verticeAdj) {
+//                     retorno.add(new Aresta(v, verticeAdj));
+//                     hasCycle = true;
+//                 }
+//             }
             
-            if (allVisited) {
-                tt[v - 1] = ++t;
-                stack.pop();
-            }
+//             if (allVisited) {
+//                 tt[v - 1] = ++t;
+//                 stack.pop();
+//             }
+//         }
+//     }
+// }
+
+class CycleFinder {
+    private Adjacentes[] adjacentes;
+    private Set<String> ciclosEncontrados;
+
+    public CycleFinder(Adjacentes[] adjacentes) {
+        this.adjacentes = adjacentes;
+        this.ciclosEncontrados = new HashSet<>();
+    }
+
+    public void encontrarCiclos() {
+        int n = adjacentes.length;
+        for (int i = 0; i < n; i++) {
+            boolean[] visitados = new boolean[n];
+            List<Integer> caminhoAtual = new ArrayList<>();
+            dfs(i, i, visitados, caminhoAtual);
         }
     }
 
-    // public void visitaRecursiva(Adjacentes[] adjacentes, int v) {
-    //     td[v-1] = ++t;
-    //     for (Adjacentes g = adjacentes[v-1]; g != null; g = g.getProximo()) {
-    //         if (!visto(g.getVertice()-1)) {
-    //             arvore.add(new Aresta(v, g.getVertice()));
-    //             pai[g.getVertice()-1] = v;
-    //             visita(adjacentes, g.getVertice());
-    //         } else if (td[g.getVertice()-1] > td[v-1]) {
-    //             avanco.add(new Aresta(v, g.getVertice()));
-    //         } else if (tt[g.getVertice()-1] == 0) {
-    //             cruzamento.add(new Aresta(v, g.getVertice()));
-    //         } else {
-    //             retorno.add(new Aresta(v, g.getVertice()));
-    //         }
-    //     }
-    //     tt[v-1] = ++t;
-    // }
+    private void dfs(int verticeAtual, int verticeInicial, boolean[] visitados, List<Integer> caminhoAtual) {
+        visitados[verticeAtual] = true;
+        caminhoAtual.add(verticeAtual + 1);
 
-    public List<Aresta> getArestasDeArvoreDoVertice(int vertice) {
-        List<Aresta> arestasDeArvore = new ArrayList<>();
-        for (Aresta aresta : arvore) {
-            if (aresta.getOrigem() == vertice) {
-                arestasDeArvore.add(aresta);
+        for (Adjacentes adj = adjacentes[verticeAtual].getProximo(); adj != null; adj = adj.getProximo()) {
+            int vizinho = adj.getVertice() - 1;
+            if (vizinho == verticeInicial && caminhoAtual.size() > 2) {
+                // Encontramos um ciclo
+                List<Integer> ciclo = new ArrayList<>(caminhoAtual);
+                normalizarEAdicionarCiclo(ciclo);
+            } else if (!visitados[vizinho]) {
+                dfs(vizinho, verticeInicial, visitados, caminhoAtual);
             }
         }
-    
-        return arestasDeArvore;
+
+        // Backtracking
+        visitados[verticeAtual] = false;
+        caminhoAtual.remove(caminhoAtual.size() - 1);
+    }
+
+    private void normalizarEAdicionarCiclo(List<Integer> cicloOriginal) {
+        String representacaoCanonica = obterRepresentacaoCanonica(cicloOriginal);
+        if (!ciclosEncontrados.contains(representacaoCanonica)) {
+            ciclosEncontrados.add(representacaoCanonica);
+            // Imprime o ciclo na ordem original de adjacência
+            System.out.println("Ciclo: " + cicloOriginal);
+        }
+    }
+
+    private String obterRepresentacaoCanonica(List<Integer> ciclo) {
+        int tamanho = ciclo.size();
+        List<String> rotacoes = new ArrayList<>();
+
+        // Gera todas as rotações possíveis do ciclo original e seu reverso
+        List<Integer> cicloOriginal = new ArrayList<>(ciclo);
+        List<Integer> cicloReverso = new ArrayList<>(ciclo);
+        Collections.reverse(cicloReverso);
+
+        List<List<Integer>> todasRotacoes = gerarRotacoes(cicloOriginal);
+        todasRotacoes.addAll(gerarRotacoes(cicloReverso));
+
+        // Converter cada rotação em uma string e adicionar à lista
+        for (List<Integer> rotacao : todasRotacoes) {
+            rotacoes.add(rotacao.toString());
+        }
+
+        // Retorna a menor representação lexicográfica
+        return Collections.min(rotacoes);
+    }
+
+    private List<List<Integer>> gerarRotacoes(List<Integer> ciclo) {
+        int tamanho = ciclo.size();
+        List<List<Integer>> rotacoes = new ArrayList<>();
+
+        for (int i = 0; i < tamanho; i++) {
+            List<Integer> rotacao = new ArrayList<>();
+            for (int j = 0; j < tamanho; j++) {
+                rotacao.add(ciclo.get((i + j) % tamanho));
+            }
+            rotacoes.add(rotacao);
+        }
+        return rotacoes;
     }
 }
 
-class TP1 {
-    public static String identificaCiclos(Adjacentes[] adjacentes) {
-        
-    }
-}
 
 public class Main {
     public static void main(String[] args) {
         String nomeArq = null;
         System.out.print("\nDigite o nome do arquivo com sua extensão (.txt): ");
         nomeArq = System.console().readLine();
-        System.out.print("Digite o número do vertice: ");
-        int vertice = Integer.parseInt(System.console().readLine());
         Adjacentes[] adjacentes = null;
         adjacentes = constroiAdjacentes(adjacentes, nomeArq);
-        Busca busca = new Busca(adjacentes, vertice);
-        // System.out.println("Tempo de descoberta: " + busca.getTdAt(vertice-1));
-        // System.out.println("Tempo de término: " + busca.getTtAt(vertice-1));
-        // System.out.println("Tempo total: " + busca.getT());
-        System.out.println("Arestas de árvore: " + busca.getArvore());
-        // System.out.println("Arestas de retorno: " + busca.getRetorno());
-        System.out.println("");
-        System.out.println("Arestas de árvore do vértice " + vertice + ": " + busca.getArestasDeArvoreDoVertice(vertice));
 
+        CycleFinder cycleFinder = new CycleFinder(adjacentes);
+        cycleFinder.encontrarCiclos();
+
+        // // imprime a lista de adjacência
+        // for (int i = 0; i < adjacentes.length; i++) {
+        //     for (Adjacentes adj = adjacentes[i]; adj != null; adj = adj.getProximo()) {
+        //         System.out.print(adj.getVertice() + " ");
+        //     }
+        //     System.out.println();
+        // }
     }
 
     public static Adjacentes[] constroiAdjacentes(Adjacentes[] adjacentes, String nomeArq) {
@@ -256,7 +314,7 @@ public class Main {
             }
 
             for (int i = 0; i < nVertices; i++) {
-                adjacentes[i] = Adjacentes.ordenarAdjacentes(adjacentes[i]);
+                adjacentes[i].setProximo(Adjacentes.ordenarAdjacentes(adjacentes[i].getProximo()));
             }            
 
             rf.close();
