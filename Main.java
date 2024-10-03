@@ -87,6 +87,7 @@ class Busca {
     
     private List<Aresta> arvore;
     private List<Aresta> retorno;
+    private List<List<Integer>> ciclos;
 
     public Busca(Adjacentes[] adjacentes, int vertice) {
         t = 0;
@@ -100,6 +101,7 @@ class Busca {
         }
         arvore = new ArrayList<Aresta>();
         retorno = new ArrayList<Aresta>();
+        ciclos = new ArrayList<>();
 
         buscaEmProfundidadeIterativa(adjacentes);
     }
@@ -198,6 +200,12 @@ class Busca {
         }
     
         return arestasDeArvore;
+    }
+}
+
+class TP1 {
+    public static String identificaCiclos(Adjacentes[] adjacentes) {
+        
     }
 }
 
