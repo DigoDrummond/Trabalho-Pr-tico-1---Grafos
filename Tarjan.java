@@ -1,15 +1,37 @@
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-class Grafo {
+class Aresta {
+    private int origem;
+    private int destino;
+
+    public Aresta(int a, int b) {
+        this.origem = a;
+        this.destino = b;
+    }
+    
+    public int getOrigem() {
+        return origem;
+    }
+
+    public int getDestino() {
+        return destino;
+    }
+
+    @Override
+    public String toString() {
+        return "[" + origem + ", " + destino + "]";
+    }
+}
+
+class Tarjan {
     private int V;
     private Adjacentes[] adj;
     private int td = 0;
     private int count = 0;
 
-    Grafo(int V) {
+    Tarjan(int V) {
         this.V = V;
         adj = new Adjacentes[V];
         for (int i = 0; i < V; i++) {
@@ -104,87 +126,5 @@ class Grafo {
             }
         }
         System.out.println("Número de componentes biconexos: " + count);
-    }
-}
-
-public class Tarjan {
-    public static void main(String[] args) {
-        long startTime = System.nanoTime();
-
-        String nomeArq = null;
-        System.out.print("\nDigite o nome do arquivo com sua extensão (.txt): ");
-        nomeArq = System.console().readLine();
-        Adjacentes[] adjacentes = null;
-        adjacentes = constroiAdjacentes(adjacentes, nomeArq);
-
-        int V = adjacentes.length;
-        Grafo g = new Grafo(V);
-
-        for (int i = 0; i < V; i++) {
-            Adjacentes adj = adjacentes[i].getProximo();
-            while (adj != null) {
-                g.addAresta(i + 1, adj.getVertice());
-                adj = adj.getProximo();
-            }
-        }
-
-        g.BCC();
-
-        long endTime = System.nanoTime();
-
-        long duration = (endTime - startTime) / 1_000_000; 
-        System.out.println("Tempo de execução: " + duration + " ms");
-    }
-
-    public static Adjacentes[] constroiAdjacentes(Adjacentes[] adjacentes, String nomeArq) {
-        try {
-            RandomAccessFile rf = new RandomAccessFile(nomeArq, "r");
-            int nVertices = Integer.parseInt(rf.readLine());
-
-            adjacentes = new Adjacentes[nVertices];
-            for (int i = 0; i < nVertices; i++) {
-                adjacentes[i] = new Adjacentes(i + 1);
-            }
-
-            while (rf.getFilePointer() < rf.length()) {
-                int[] valores = processLine(rf);
-
-                Adjacentes aux = adjacentes[valores[0] - 1];
-                while (aux.getProximo() != null) {
-                    aux = aux.getProximo();
-                }
-                aux.setProximo(new Adjacentes(valores[1]));
-
-                aux = adjacentes[valores[1] - 1];
-                while (aux.getProximo() != null) {
-                    aux = aux.getProximo();
-                }
-                aux.setProximo(new Adjacentes(valores[0]));
-            }
-
-            for (int i = 0; i < nVertices; i++) {
-                adjacentes[i].setProximo(Adjacentes.ordenarAdjacentes(adjacentes[i].getProximo()));
-            }
-
-            rf.close();
-            return adjacentes;
-        } catch (Exception e) {
-            System.out.println("Erro ao abrir o arquivo.");
-            return null;
-        }
-    }
-
-    public static int[] processLine(RandomAccessFile rf) {
-        int[] values = new int[2];
-        try {
-            String linha = rf.readLine();
-            linha = linha.trim();
-            String[] numeros = linha.split("\\s+");
-            values[0] = Integer.parseInt(numeros[0]);
-            values[1] = Integer.parseInt(numeros[1]);
-        } catch (Exception e) {
-            System.out.println("Erro ao ler a linha: " + e);
-        }
-        return values;
     }
 }
