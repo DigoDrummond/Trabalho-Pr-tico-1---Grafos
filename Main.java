@@ -185,11 +185,11 @@ class Aresta {
 
 class CycleFinder {
     private Adjacentes[] adjacentes;
-    private Set<String> ciclosEncontrados;
+    private List<List<Integer>> ciclosList;
 
     public CycleFinder(Adjacentes[] adjacentes) {
         this.adjacentes = adjacentes;
-        this.ciclosEncontrados = new HashSet<>();
+        this.ciclosList = new ArrayList<>();
     }
 
     public void encontrarCiclos() {
@@ -199,14 +199,20 @@ class CycleFinder {
             List<Integer> caminhoAtual = new ArrayList<>();
             dfs(i, i, visitados, caminhoAtual);
         }
+        // Após coletar todos os ciclos, filtramos para manter apenas os maiores
+        filtrarCiclos();
+        // Imprimimos os ciclos filtrados
+        for (List<Integer> ciclo : ciclosList) {
+            System.out.println("Ciclo: " + ciclo);
+        }
     }
 
     private void dfs(int verticeAtual, int verticeInicial, boolean[] visitados, List<Integer> caminhoAtual) {
         visitados[verticeAtual] = true;
-        caminhoAtual.add(verticeAtual + 1);
+        caminhoAtual.add(verticeAtual + 1); // +1 para ajustar o índice (0-based) para vértices (1-based)
 
         for (Adjacentes adj = adjacentes[verticeAtual].getProximo(); adj != null; adj = adj.getProximo()) {
-            int vizinho = adj.getVertice() - 1;
+            int vizinho = adj.getVertice() - 1; // Ajuste para 0-based
             if (vizinho == verticeInicial && caminhoAtual.size() > 2) {
                 // Encontramos um ciclo
                 List<Integer> ciclo = new ArrayList<>(caminhoAtual);
@@ -222,47 +228,67 @@ class CycleFinder {
     }
 
     private void normalizarEAdicionarCiclo(List<Integer> cicloOriginal) {
-        String representacaoCanonica = obterRepresentacaoCanonica(cicloOriginal);
-        if (!ciclosEncontrados.contains(representacaoCanonica)) {
-            ciclosEncontrados.add(representacaoCanonica);
-            // Imprime o ciclo na ordem original de adjacência
-            System.out.println("Ciclo: " + cicloOriginal);
+        // Gera a representação canônica do ciclo
+        List<Integer> cicloNormalizado = obterCicloNormalizado(cicloOriginal);
+        // Adiciona apenas se ainda não estiver na lista (evita duplicatas)
+        if (!ciclosList.contains(cicloNormalizado)) {
+            ciclosList.add(cicloNormalizado);
         }
     }
 
-    private String obterRepresentacaoCanonica(List<Integer> ciclo) {
-        int tamanho = ciclo.size();
-        List<String> rotacoes = new ArrayList<>();
+    private List<Integer> obterCicloNormalizado(List<Integer> ciclo) {
+        // Rotacionar para que o ciclo comece com o menor vértice
+        List<Integer> rotacionado = rotacionarParaMin(ciclo);
 
-        // Gera todas as rotações possíveis do ciclo original e seu reverso
-        List<Integer> cicloOriginal = new ArrayList<>(ciclo);
-        List<Integer> cicloReverso = new ArrayList<>(ciclo);
-        Collections.reverse(cicloReverso);
+        // Decidir a direção com a sequência lexicograficamente menor
+        List<Integer> reverso = new ArrayList<>(rotacionado);
+        Collections.reverse(reverso);
+        List<Integer> rotacionadoReverso = rotacionarParaMin(reverso);
 
-        List<List<Integer>> todasRotacoes = gerarRotacoes(cicloOriginal);
-        todasRotacoes.addAll(gerarRotacoes(cicloReverso));
+        // Escolher a representação lexicograficamente menor
+        List<Integer> representacao1 = rotacionado;
+        List<Integer> representacao2 = rotacionadoReverso;
 
-        // Converter cada rotação em uma string e adicionar à lista
-        for (List<Integer> rotacao : todasRotacoes) {
-            rotacoes.add(rotacao.toString());
-        }
-
-        // Retorna a menor representação lexicográfica
-        return Collections.min(rotacoes);
-    }
-
-    private List<List<Integer>> gerarRotacoes(List<Integer> ciclo) {
-        int tamanho = ciclo.size();
-        List<List<Integer>> rotacoes = new ArrayList<>();
-
-        for (int i = 0; i < tamanho; i++) {
-            List<Integer> rotacao = new ArrayList<>();
-            for (int j = 0; j < tamanho; j++) {
-                rotacao.add(ciclo.get((i + j) % tamanho));
+        // Compare elemento a elemento
+        for (int i = 0; i < representacao1.size(); i++) {
+            if (representacao1.get(i) < representacao2.get(i)) {
+                return representacao1;
+            } else if (representacao1.get(i) > representacao2.get(i)) {
+                return representacao2;
             }
-            rotacoes.add(rotacao);
         }
-        return rotacoes;
+        return representacao1; // Ambas as representações são iguais
+    }
+
+    private List<Integer> rotacionarParaMin(List<Integer> ciclo) {
+        int minVertex = Collections.min(ciclo);
+        int minIndex = ciclo.indexOf(minVertex);
+        List<Integer> rotacionado = new ArrayList<>();
+        for (int i = 0; i < ciclo.size(); i++) {
+            rotacionado.add(ciclo.get((minIndex + i) % ciclo.size()));
+        }
+        return rotacionado;
+    }
+
+    private void filtrarCiclos() {
+        List<List<Integer>> listaFiltrada = new ArrayList<>();
+        for (List<Integer> ciclo : ciclosList) {
+            Set<Integer> cicloSet = new HashSet<>(ciclo);
+            boolean eSubciclo = false;
+            for (List<Integer> outroCiclo : ciclosList) {
+                if (outroCiclo.size() > ciclo.size()) {
+                    Set<Integer> outroCicloSet = new HashSet<>(outroCiclo);
+                    if (outroCicloSet.containsAll(cicloSet)) {
+                        eSubciclo = true;
+                        break;
+                    }
+                }
+            }
+            if (!eSubciclo) {
+                listaFiltrada.add(ciclo);
+            }
+        }
+        ciclosList = listaFiltrada;
     }
 }
 
